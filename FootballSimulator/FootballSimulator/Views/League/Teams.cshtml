@@ -1,0 +1,106 @@
+@model List<FootballSimulator.Models.Team>
+@{
+    ViewData["Title"] = ViewBag.League?.LeagueName + " - Teams";
+}
+
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="@Url.Action("Index", "League")">Leagues</a></li>
+                    <li class="breadcrumb-item"><a href="@Url.Action("Details", new { leagueId = ViewBag.League?.LeagueId })">@ViewBag.League?.LeagueName</a></li>
+                    <li class="breadcrumb-item active">Teams</li>
+                </ol>
+            </nav>
+            <h1 class="mb-3">@ViewBag.League?.LeagueName - Teams</h1>
+            <p class="text-muted">@Model?.Count teams in this league</p>
+        </div>
+    </div>
+
+    <div class="row">
+        @if (Model == null || Model.Count == 0)
+        {
+            <div class="col-12">
+                <div class="alert alert-warning" role="alert">
+                    <strong>No teams found.</strong>
+                </div>
+            </div>
+        }
+        else
+        {
+            @foreach (var team in Model)
+            {
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card team-card h-100 shadow-sm">
+                        <div class="card-header" style="background: linear-gradient(135deg, rgb(@team.TeamColor1R, @team.TeamColor1G, @team.TeamColor1B) 0%, rgb(@team.TeamColor2R, @team.TeamColor2G, @team.TeamColor2B) 100%); color: white;">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <h5 class="card-title mb-0">@team.TeamName</h5>
+                                <span class="badge bg-light text-dark">@team.OverallRating</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <small class="text-muted">Stadium</small>
+                                    <p class="mb-0"><strong>@team.StadiumName</strong></p>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted">Founded</small>
+                                    <p class="mb-0"><strong>@team.FoundationYear</strong></p>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-4 text-center">
+                                    <small class="text-muted">Attack</small>
+                                    <p class="mb-0"><strong class="text-primary">@team.AttackRating</strong></p>
+                                </div>
+                                <div class="col-4 text-center">
+                                    <small class="text-muted">Midfield</small>
+                                    <p class="mb-0"><strong class="text-info">@team.MidfieldRating</strong></p>
+                                </div>
+                                <div class="col-4 text-center">
+                                    <small class="text-muted">Defense</small>
+                                    <p class="mb-0"><strong class="text-danger">@team.DefenseRating</strong></p>
+                                </div>
+                            </div>
+                            <hr />
+                            <p class="small text-muted mb-2">
+                                <i class="fas fa-users"></i> <strong>@team.Players.Count</strong> Players
+                            </p>
+                        </div>
+                        <div class="card-footer bg-light">
+                            <div class="btn-group w-100" role="group">
+                                <a href="@Url.Action("TeamDetails", "Simulation", new { teamId = team.TeamId, leagueId = ViewBag.League?.LeagueId })" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-eye"></i> Details
+                                </a>
+                                <a href="@Url.Action("Index", "Simulation", new { leagueId = ViewBag.League?.LeagueId })" class="btn btn-sm btn-outline-secondary">
+                                    <i class="fas fa-arrow-left"></i> Back
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+<style>
+    .team-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .team-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+
+    .btn-group {
+        gap: 2px;
+    }
+
+    .btn-group .btn {
+        border-radius: 4px;
+    }
+</style>

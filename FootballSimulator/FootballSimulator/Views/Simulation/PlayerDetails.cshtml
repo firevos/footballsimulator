@@ -1,0 +1,419 @@
+@model Player
+@{
+    ViewData["Title"] = $"{Model.FullName} - Player Details";
+}
+
+<div class="container-fluid mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="@Url.Action("Index", "Simulation")">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="@Url.Action("TeamDetails", "Simulation", new { teamId = Model.TeamId })">@ViewBag.TeamName</a></li>
+            <li class="breadcrumb-item active">@Model.FullName</li>
+        </ol>
+    </nav>
+
+    <!-- Player Header -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h1 class="text-white mb-0">@Model.FullName</h1>
+                            <p class="text-white-50 mb-0">@ViewBag.TeamName</p>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <div class="text-white">
+                                <div class="fs-3 fw-bold">@Model.OverallRating</div>
+                                <small>Overall Rating</small>
+                            </div>
+                            @if (Model.Potential > Model.OverallRating)
+                            {
+                                <div class="text-white mt-2">
+                                    <small class="text-white-50">Potential: </small>
+                                    <span class="fs-5 fw-bold">@Model.Potential</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <ul class="nav nav-tabs mb-4" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="attributes-tab" data-bs-toggle="tab" href="#attributes" role="tab">
+                <i class="fa fa-star"></i> Attributes
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="personal-tab" data-bs-toggle="tab" href="#personal" role="tab">
+                <i class="fa fa-user"></i> Personal
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="career-tab" data-bs-toggle="tab" href="#career" role="tab">
+                <i class="fa fa-history"></i> Career
+            </a>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <!-- Attributes Tab -->
+        <div class="tab-pane fade show active" id="attributes" role="tabpanel">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Attacking Attributes</h5>
+                        </div>
+                        <div class="card-body">
+                            @{
+                                var attackAttrs = new List<(string name, int value)>
+                                {
+                                    ("Sprint Speed", Model.SprintSpeed),
+                                    ("Acceleration", Model.Acceleration),
+                                    ("Shot Power", Model.ShotPower),
+                                    ("Finishing", Model.Finishing),
+                                    ("Long Shots", Model.LongShots),
+                                    ("Volleys", Model.Volleys),
+                                    ("Penalties", Model.Penalties),
+                                    ("Positioning", Model.Positioning),
+                                };
+                            }
+                            @foreach (var attr in attackAttrs)
+                            {
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <strong>@attr.name</strong>
+                                        <span class="badge bg-success">@attr.value</span>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-success" style="width: @(attr.value)%"></div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">Passing Attributes</h5>
+                        </div>
+                        <div class="card-body">
+                            @{
+                                var passingAttrs = new List<(string name, int value)>
+                                {
+                                    ("Short Passing", Model.ShortPassing),
+                                    ("Long Passing", Model.LongPassing),
+                                    ("Crossing", Model.Crossing),
+                                    ("Vision", Model.Vision),
+                                    ("Free Kick Accuracy", Model.FreeKickAccuracy),
+                                };
+                            }
+                            @foreach (var attr in passingAttrs)
+                            {
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <strong>@attr.name</strong>
+                                        <span class="badge bg-success">@attr.value</span>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-success" style="width: @(attr.value)%"></div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">Dribbling Attributes</h5>
+                        </div>
+                        <div class="card-body">
+                            @{
+                                var dribblingAttrs = new List<(string name, int value)>
+                                {
+                                    ("Ball Control", Model.BallControl),
+                                    ("Dribbling", Model.Dribbling_Detailed),
+                                    ("Curve", Model.Curve),
+                                    ("Agility", Model.Agility),
+                                    ("Balance", Model.Balance),
+                                };
+                            }
+                            @foreach (var attr in dribblingAttrs)
+                            {
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <strong>@attr.name</strong>
+                                        <span class="badge bg-info">@attr.value</span>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-info" style="width: @(attr.value)%"></div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="mb-0">Defensive Attributes</h5>
+                        </div>
+                        <div class="card-body">
+                            @{
+                                var defensiveAttrs = new List<(string name, int value)>
+                                {
+                                    ("Standing Tackle", Model.StandingTackle),
+                                    ("Sliding Tackle", Model.SlidingTackle),
+                                    ("Interceptions", Model.Interceptions),
+                                    ("Heading Accuracy", Model.HeadingAccuracy),
+                                    ("Defensive Awareness", Model.DefensiveAwareness),
+                                };
+                            }
+                            @foreach (var attr in defensiveAttrs)
+                            {
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <strong>@attr.name</strong>
+                                        <span class="badge bg-danger">@attr.value</span>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-danger" style="width: @(attr.value)%"></div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0">Mental & Physical</h5>
+                        </div>
+                        <div class="card-body">
+                            @{
+                                var mentalAttrs = new List<(string name, int value)>
+                                {
+                                    ("Reactions", Model.Reactions),
+                                    ("Composure", Model.Composure),
+                                    ("Strength", Model.Strength),
+                                    ("Stamina", Model.Stamina),
+                                    ("Jumping", Model.Jumping),
+                                };
+                            }
+                            @foreach (var attr in mentalAttrs)
+                            {
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <strong>@attr.name</strong>
+                                        <span class="badge bg-warning text-dark">@attr.value</span>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-warning" style="width: @(attr.value)%"></div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                @if (Model.GKDiving > 0 || Model.GKHandling > 0)
+                {
+                    <div class="col-md-6">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-secondary text-white">
+                                <h5 class="mb-0">Goalkeeper Attributes</h5>
+                            </div>
+                            <div class="card-body">
+                                @{
+                                    var gkAttrs = new List<(string name, int value)>
+                                    {
+                                        ("Diving", Model.GKDiving),
+                                        ("Handling", Model.GKHandling),
+                                        ("Kicking", Model.GKKicking),
+                                        ("Positioning", Model.GKPositioning),
+                                        ("Reflexes", Model.GKReflexes),
+                                    };
+                                }
+                                @foreach (var attr in gkAttrs)
+                                {
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <strong>@attr.name</strong>
+                                            <span class="badge bg-secondary">@attr.value</span>
+                                        </div>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-secondary" style="width: @(attr.value)%"></div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Personal Tab -->
+        <div class="tab-pane fade" id="personal" role="tabpanel">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Personal Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Full Name:</strong> <span class="text-primary">@Model.FullName</span></p>
+                            <p><strong>Nationality:</strong> <span class="text-primary">@Model.Nationality</span></p>
+                            <p><strong>Age:</strong> <span class="text-primary">@Model.Age</span></p>
+                            <p><strong>Height:</strong> <span class="text-primary">@Model.Height cm</span></p>
+                            <p><strong>Weight:</strong> <span class="text-primary">@Model.Weight kg</span></p>
+                            <p><strong>Preferred Foot:</strong> <span class="text-primary">@(Model.PreferredFoot == "R" ? "Right" : "Left")</span></p>
+                            <p>
+                                <strong>Traits:</strong>
+                                @if (!string.IsNullOrEmpty(Model.Trait1))
+                                {
+                                    <span class="badge bg-info">@Model.Trait1</span>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.Trait2))
+                                {
+                                    <span class="badge bg-info">@Model.Trait2</span>
+                                }
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-secondary text-white">
+                            <h5 class="mb-0">Contract Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Team:</strong> <span class="text-primary">@ViewBag.TeamName</span></p>
+                            <p><strong>Jersey Number:</strong> <span class="badge bg-dark fs-6">@Model.JerseyNumber</span></p>
+                            <p><strong>Contract Valid Until:</strong> <span class="text-primary">@Model.ContractValidUntil</span></p>
+                            <p>
+                                <strong>Status:</strong>
+                                @if (Model.IsRetiring)
+                                {
+                                    <span class="badge bg-danger">Retiring</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">Active</span>
+                                }
+                            </p>
+                            <p>
+                                <strong>Form:</strong>
+                                @{
+                                    var formColors = new Dictionary<int, string> { { 5, "success" }, { 4, "info" }, { 3, "warning" }, { 2, "orange" }, { 1, "danger" } };
+                                    var formColor = formColors.GetValueOrDefault(Model.Form, "secondary");
+                                }
+                                <span class="badge bg-@formColor">@Model.Form</span>
+                            </p>
+                            @if (Model.Injury > 0)
+                            {
+                                <p>
+                                    <strong>Injury Status:</strong>
+                                    <span class="badge bg-danger">Injured</span>
+                                </p>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Career Tab -->
+        <div class="tab-pane fade" id="career" role="tabpanel">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">League Statistics</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-md-6 mb-3">
+                                    <div class="fs-4 fw-bold">@Model.LeagueGoals</div>
+                                    <small class="text-muted">Goals</small>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="fs-4 fw-bold">@Model.LeagueAppearances</div>
+                                    <small class="text-muted">Appearances</small>
+                                </div>
+                            </div>
+                            <hr>
+                            <p><strong>Previous Match Goals:</strong> <span class="text-primary">@Model.LeagueGoalsPrevMatch</span></p>
+                            <p><strong>Last 3 Matches Goals:</strong> <span class="text-primary">@Model.LeagueGoalsPrevThreeMatches</span></p>
+                            <p>
+                                <strong>Top Scorer:</strong>
+                                @if (Model.IsTopScorer)
+                                {
+                                    <span class="badge bg-gold text-dark">Yes</span>
+                                }
+                                else if (Model.IsAmongTopScorers)
+                                {
+                                    <span class="badge bg-warning text-dark">Among Top Scorers</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">No</span>
+                                }
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-secondary text-white">
+                            <h5 class="mb-0">Discipline</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-md-6 mb-3">
+                                    <div class="fs-4 fw-bold text-warning">@Model.Yellows</div>
+                                    <small class="text-muted">Yellow Cards</small>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="fs-4 fw-bold text-danger">@Model.Reds</div>
+                                    <small class="text-muted">Red Cards</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a href="@Url.Action("TeamDetails", "Simulation", new { teamId = Model.TeamId })" class="btn btn-secondary">
+            <i class="fa fa-arrow-left"></i> Back to Team
+        </a>
+    </div>
+</div>
+
+<style>
+    .bg-gold {
+        background-color: #FFD700 !important;
+    }
+    .bg-orange {
+        background-color: #FF8C00 !important;
+    }
+</style>

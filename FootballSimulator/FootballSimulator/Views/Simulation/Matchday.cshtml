@@ -1,0 +1,271 @@
+@model List<Match>
+@{
+    ViewData["Title"] = $"Matchday {ViewBag.CurrentMatchDay} - Simulation";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="alert alert-primary d-flex justify-content-between align-items-center">
+                <h4 class="mb-0"><i class="fa fa-calendar"></i> Matchday @ViewBag.CurrentMatchDay of @ViewBag.TotalMatchDays</h4>
+                @if (!ViewBag.IsSeasonActive || ViewBag.CurrentMatchDay >= ViewBag.TotalMatchDays)
+                {
+                    <span class="badge bg-warning">Season Complete</span>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div id="matchesContainer">
+                @foreach (var match in Model)
+                {
+                    <div class="card shadow-sm match-card mb-3" data-match-id="@match.MatchId">
+                        <div class="card-body p-4">
+                            <div class="row align-items-center">
+                                <div class="col-md-4 text-center">
+                                    <h5 class="mb-2">@(match.HomeTeam?.TeamName ?? "Home Team")</h5>
+                                    <span class="team-badge" style="background-color: rgb(@(match.HomeTeam?.TeamColor1R ?? 0), @(match.HomeTeam?.TeamColor1G ?? 0), @(match.HomeTeam?.TeamColor1B ?? 0)); color: #fff; padding: 5px 10px; border-radius: 5px; display: inline-block;">●</span>
+                                </div>
+                                <div class="col-md-4 text-center score-area">
+                                    <div class="score" id="score-@match.MatchId">
+                                        @if (match.IsSimulated)
+                                        {
+                                            <div class="fs-2 fw-bold">@match.HomeGoals <span class="text-muted">-</span> @match.AwayGoals</div>
+                                        }
+                                        else
+                                        {
+                                            <div class="fs-4 text-muted">vs</div>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="col-md-4 text-center">
+                                    <h5 class="mb-2">@(match.AwayTeam?.TeamName ?? "Away Team")</h5>
+                                    <span class="team-badge" style="background-color: rgb(@(match.AwayTeam?.TeamColor1R ?? 0), @(match.AwayTeam?.TeamColor1G ?? 0), @(match.AwayTeam?.TeamColor1B ?? 0)); color: #fff; padding: 5px 10px; border-radius: 5px; display: inline-block;">●</span>
+                                </div>
+                            </div>
+                            @if (match.IsSimulated)
+                            {
+                                <div class="mt-3 text-center">
+                                    @{
+                                        var resultClass = match.Result == MatchResult.HomeWin ? "success" : (match.Result == MatchResult.AwayWin ? "danger" : "secondary");
+                                        var resultText = match.Result == MatchResult.HomeWin ? "Home Win" : (match.Result == MatchResult.AwayWin ? "Away Win" : "Draw");
+                                    }
+                                    <span class="badge bg-@resultClass">@resultText</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm sticky-top" style="top: 20px;">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fa fa-gamepad"></i> Simulation Controls</h5>
+                </div>
+                <div class="card-body">
+                    @if (!ViewBag.IsSeasonActive)
+                    {
+                        <div class="alert alert-warning mb-3">
+                            Season has ended. Start a new season to continue.
+                        </div>
+                        <a href="@Url.Action("ResetSeason", "Simulation")" class="btn btn-primary w-100 mb-2">
+                            <i class="fa fa-refresh"></i> Start New Season
+                        </a>
+                    }
+                    else
+                    {
+                        @if (Model.Any(m => !m.IsSimulated))
+                        {
+                            <button class="btn btn-success btn-lg w-100 mb-3" id="simulateBtn" onclick="simulateMatchday()">
+                                <i class="fa fa-play"></i> Simulate Matchday
+                            </button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-success btn-lg w-100 mb-3" id="nextMatchdayBtn" onclick="nextMatchday()">
+                                <i class="fa fa-arrow-right"></i> Next Matchday
+                            </button>
+                        }
+                    }
+
+                    <hr>
+
+                    <h6>Matchday Progress</h6>
+                    <div class="progress mb-3" style="height: 25px;">
+                        <div class="progress-bar bg-info" role="progressbar" style="width: @((ViewBag.CurrentMatchDay / ViewBag.TotalMatchDays) * 100)%">
+                            @((ViewBag.CurrentMatchDay / ViewBag.TotalMatchDays) * 100).ToString("F0")%
+                        </div>
+                    </div>
+
+                    <p class="mb-0">
+                        <strong>Matches Remaining:</strong><br>
+                        <span id="remainingMatches">@Model.Count(m => !m.IsSimulated)</span> matches
+                    </p>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mt-3">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fa fa-table"></i> Top Scorers</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div id="topScorers" class="p-3">
+                        <p class="text-muted">No goals scored yet</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mt-3">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fa fa-arrow-left"></i> Navigation</h5>
+                </div>
+                <div class="card-body">
+                    <a href="@Url.Action("Standings", "Simulation")" class="btn btn-outline-primary w-100 mb-2">
+                        <i class="fa fa-table"></i> View Standings
+                    </a>
+                    <a href="@Url.Action("Index", "Simulation")" class="btn btn-outline-secondary w-100">
+                        <i class="fa fa-home"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function simulateMatchday() {
+        const btn = document.getElementById('simulateBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Simulating...';
+
+        fetch('@Url.Action("SimulateMatchday", "Simulation")', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Animate score reveals
+                data.matches.forEach((match, index) => {
+                    setTimeout(() => {
+                        const scoreElement = document.getElementById(`score-${match.matchId}`);
+                        if (scoreElement) {
+                            scoreElement.innerHTML = `
+                                <div class="fs-2 fw-bold animate-score">
+                                    ${match.homeGoals} <span class="text-muted">-</span> ${match.awayGoals}
+                                </div>
+                                <div class="mt-2">
+                                    <span class="badge bg-${match.result === 'HomeWin' ? 'success' : (match.result === 'AwayWin' ? 'danger' : 'secondary')}">
+                                        ${match.result === 'HomeWin' ? 'Home Win' : (match.result === 'AwayWin' ? 'Away Win' : 'Draw')}
+                                    </span>
+                                </div>
+                            `;
+                            scoreElement.closest('.match-card').classList.add('simulated');
+                        }
+                        document.getElementById('remainingMatches').textContent = Math.max(0, data.matches.length - index - 1);
+                    }, index * 500); // Stagger the reveals by 500ms
+                });
+
+                // Update standings after all reveals
+                setTimeout(() => {
+                    updateStandings();
+
+                    if (data.isSeasonComplete) {
+                        setTimeout(() => {
+                            alert('Season Complete! Check the standings for final results.');
+                            location.reload();
+                        }, 2000);
+                    } else {
+                        setTimeout(() => {
+                            btn.innerHTML = '<i class="fa fa-arrow-right"></i> Next Matchday';
+                            btn.id = 'nextMatchdayBtn';
+                            btn.onclick = nextMatchday;
+                            btn.disabled = false;
+                        }, 1500);
+                    }
+                }, data.matches.length * 500);
+            } else {
+                alert('Error simulating matchday: ' + data.error);
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa fa-play"></i> Simulate Matchday';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred during simulation');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa fa-play"></i> Simulate Matchday';
+        });
+    }
+
+    function nextMatchday() {
+        window.location.href = '@Url.Action("Matchday", "Simulation")';
+    }
+
+    function updateStandings() {
+        fetch('@Url.Action("GetStandings", "Simulation")')
+            .then(response => response.json())
+            .then(standings => {
+                // Update any displays that need it
+                console.log('Updated standings:', standings);
+            })
+            .catch(error => console.error('Error updating standings:', error));
+    }
+</script>
+
+<style>
+    .match-card {
+        transition: all 0.3s ease;
+        border-left: 5px solid #e0e0e0;
+    }
+
+    .match-card.simulated {
+        border-left-color: #28a745;
+        background-color: #f8fff9;
+    }
+
+    .animate-score {
+        animation: slideIn 0.5s ease-out;
+    }
+
+    @@keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: scale(0.8);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    .score-area {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 5px;
+    }
+
+    .sticky-top {
+        z-index: 1000;
+    }
+
+    .team-badge {
+        font-size: 1.5em;
+        animation: fadeIn 0.5s ease-in;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+</style>
